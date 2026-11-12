@@ -1,30 +1,19 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 )
 
 func main() {
-
-	os.ReadFile("europe.json")
-
-	// read entire JSON file as raw bytes
-	bytes, err := os.ReadFile("europe.json")
+	// Fetch all countries in Europe from the live API
+	countries, err := fetchCountries("Asia")
 	if err != nil {
-		// error handling
 		fmt.Println(err)
+		return
 	}
-	// create am empty APIResponse for the JSON to be loaded into
-	var response APIResponse
 
-	// convert raw JSON bytes into structs
-	err = json.Unmarshal(bytes, &response)
-
-	// loop through every country in data.objects and print its common name
-	for _, country := range response.Data.Objects {
+	// Print each country's common name
+	for _, country := range countries {
 		fmt.Println(country.Names.Common)
 	}
-
 }
