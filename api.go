@@ -9,7 +9,7 @@ import (
 
 // fetchCountries asks the REST Countries API for every country in a region and returns them as a slice of Country structs.
 func fetchCountries(region string) ([]Country, error) {
-	// Build the request URL with the chosen region.
+	// build the request URL with the chosen region.
 	// limit=100 so we get every country, not just the first 25.
 	// response_fields keeps the response small by only asking for what we display.
 	url := fmt.Sprintf(
@@ -17,41 +17,52 @@ func fetchCountries(region string) ([]Country, error) {
 		region,
 	)
 
-	// Create the GET request (nil = no request body)
+	// create the GET request (nil = no request body)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Attach the API key from api_secrets.go as a bearer token
+	// attach the API key from api_secrets.go as a bearer token
 	req.Header.Set("Authorization", "Bearer "+api_key)
 
-	// Send the request
+	// send the request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	// Close the connection when this function finishes
+	// close the connection when this function finishes
 	defer resp.Body.Close()
 
-	// Read the whole response body into bytes
+	// read the whole response body into bytes
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	// If the API returned an error (bad key, bad region, etc.), report it
+	// if the API returned an error (bad key, bad region, etc.), report it
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, string(body))
 	}
 
-	// Convert the JSON into our structs
+	// convert the JSON into our structs
 	var response APIResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	// Hand back just the list of countries
+	// hand back just the list of countries
 	return response.Data.Objects, nil
+}
+
+// fetchFlag downloads a flag image and returns its raw bytes
+// Claude suggestion
+func fetchFlag(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
